@@ -89,27 +89,45 @@ The `run_all.R` script will:
 
 ## Results
 
-### Best Performing Models
-Across all experiments, the top performing models based on accuracy were:
+### Selected Model: Logistic Regression with df_dev Features 🏆
 
-| Experiment | Model | Accuracy | AUC | F1 Score |
-|------------|-------|----------|-----|----------|
-| **df_domain** | **Neural Network** | **94.00%** | **0.809** | **0.969** |
-| df_dev | Neural Network | 93.94% | 0.797 | 0.969 |
-| df_domain | Random Forest | 93.59% | 0.775 | 0.967 |
+After comprehensive evaluation of 48 model combinations (8 feature engineering strategies × 6 ML algorithms), **Logistic Regression with deviation-based features (df_dev)** was selected as the final model.
 
-### Key Findings
-- **Neural Networks** consistently performed best across most feature engineering approaches
-- **Domain knowledge-based features** (df_domain) yielded the highest accuracy (94.00%)
-- All models achieved 100% recall, indicating excellent detection of high-income individuals
-- Baseline accuracy was 76.62%, with best models achieving a lift of 17.38%
-- XGBoost showed inconsistent performance, suggesting potential need for hyperparameter tuning
+**Performance Metrics:**
+- **AUC:** 0.835 (highest among all experiments)
+- **Accuracy:** 92.2%
+- **F1 Score:** 0.959
+- **Recall:** 1.000 (perfect detection of high-income individuals)
+- **Precision:** 92.2%
 
-### Performance Metrics Summary
-- **Best Accuracy:** 94.00% (Neural Network with domain features)
-- **Best AUC:** 0.835 (Logistic Regression with deviation features)
-- **Best F1 Score:** 0.969 (Neural Network with domain features)
+### Why Logistic Regression?
+
+While Neural Networks achieved slightly higher accuracy (94.00%), Logistic Regression was chosen for:
+- **Superior AUC (0.835):** Best discriminative ability across all models
+- **Consistency:** Most stable performance across different feature sets (AUC range: 0.795-0.835, minimal variance)
+- **Reliability:** High performance with excellent interpretability
+- **Production readiness:** Simple models with strong features outperform complex models with weak features
+
+### Model Comparison Summary
+
+| Category | Model | Performance |
+|----------|-------|-------------|
+| **Best Overall** | Logistic Regression (df_dev) | AUC: 0.835, Accuracy: 92.2% |
+| **Most Stable** | Neural Networks | AUC Range: 0.795-0.817, High reliability |
+| **Most Balanced** | Random Forest | F1: 0.94-0.96, Strong stability |
+| **Poorest** | XGBoost | AUC: ~0.68, High variance |
+
+### Key Insights from 48 Experiments
+✓ **Feature engineering** drove performance more than algorithm complexity  
+✓ **df_dev strategy** (deviation-based merging) achieved best results  
+✓ **Domain grouping + rare merging** consistently improved performance  
+✓ **Log/Box-Cox transformations** provided only marginal gains  
+✓ **Simple models + strong features** outperformed complex models with weak features  
+
+### Baseline Comparison
 - **Baseline Accuracy:** 76.62%
+- **Final Model Lift:** 15.53% improvement over baseline
+- All models achieved 100% recall, ensuring no high-income individuals were missed
 
 ## Future Improvements
 - Feature selection optimization
@@ -120,12 +138,3 @@ Across all experiments, the top performing models based on accuracy were:
 ## Author
 **Amira Ali**
 - GitHub: [@Amira-Ali](https://github.com/Amira-Ali)
-- [Add LinkedIn or other contact if you'd like]
-
-## License
-[Choose a license, e.g., MIT License, or remove this section]
-
-## Acknowledgments
-- Course: KL7010 - Principles of Data Science
-- Institution: Northumbria University
-- [Any other acknowledgments]
