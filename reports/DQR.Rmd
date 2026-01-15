@@ -24,6 +24,10 @@ params:
 results <- params$eda_results
 df <- results$df
 temp_df <- df
+library(ggplot2)
+library(patchwork)
+library(dplyr)
+
 ```
 
 ```{css, echo=FALSE}
@@ -269,7 +273,7 @@ for (col_name in cat_cols) {
 }
 
 if (length(plots) > 0) {
-  wrap_plots(plots, ncol = min(3, length(plots)))
+  print(wrap_plots(plots, ncol = min(3, length(plots))))
 }
 
 
