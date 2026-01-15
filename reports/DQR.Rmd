@@ -1,0 +1,1327 @@
+---
+title: "`r params$dataset_name` Data Quality Report"
+author: "**Author: Amira Shlebik** | **Email: amira.shlebik@northumbria.ac.uk** | **Student ID: w25026700**"
+date: "**Date: `r Sys.Date()`** | **Word Count: 3148**"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    theme: cosmo
+    css: styles.css
+    code_folding: hide
+params:
+  dataset_name: NULL
+  eda_results: NULL
+  glossary: NULL
+  comments: NULL
+  fe_results: NULL
+  model_performance_tbl: NULL
+  
+---
+
+```{r setup, include=FALSE}
+results <- params$eda_results
+df <- results$df
+temp_df <- df
+```
+
+```{css, echo=FALSE}
+#code-buttons {
+  display: none;
+}
+```
+
+# Overview
+## Project & Dataset Descriptions
+- This report assesses the quality of the Income dataset, used to predict whether an individual's annual income exceeds $50K. The assessment focused on the dataset's structure, completeness, and integrity. It is structured into two phases: integrity checks and descriptive statistics. 
+
+- The dataset, Income.csv, contains 11 features and 10k rows, including personal, employment, and financial data. Key variables include age, education, workclass, occupation, and hours-per-week. The response variable, income, is binary, indicating whether the individual earns more than $50K/year. This dataset represents a binary classification problem, as the goal is to predict the value of a binary target variable.
+
+## Objective
+The objective of this assessment is to evaluate the dataset's quality, identifying missing values, inconsistencies, or any irregularities to guide necessary pre-processing before the modeling phase.
+
+---
+
+# Dataset Structure & Metadata
+## Schema & Data Types
+```{r ds_str, echo=FALSE, comment=""}
+str(df)
+ 
+
+```
+
+
+```{r ds_str_comments, echo=FALSE, results='asis', comment=""}
+
+col_types_string <- results$col_types
+
+cat(col_types_string)
+
+```
+
+---
+
+## Technical Validity
+
+### Type Mismatch
+```{r type_mismatch, echo=FALSE, comment = ""}
+tm <- results$integrity_checks$type_mismatch$summary
+
+if (is.null(tm)) {
+  cat("No numeric or date values are stored incorrectly as text.")
+} else {
+  kableExtra::kbl(
+    tm, 
+    booktabs = TRUE,
+    toprule = "", 
+    midrule = "",  
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)
+}
+
+```
+
+---
+
+### Empty Rows & Empty Columns
+```{r empty_row_col ,echo=FALSE, comment = ""}
+empty_tbl <- results$integrity_checks$empty_rows_cols$summary
+
+if (all(empty_tbl$Count == 0)) {
+  cat("No empty rows or columns detected.")
+} else {
+    kableExtra::kbl(
+    empty_tbl, 
+    booktabs = TRUE,
+    toprule = "", 
+    midrule = "",  
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)
+}
+
+```
+
+---
+
+### Missing Values (Overview)
+```{r missing_overview, echo=FALSE, results='asis', comment=""}
+
+missing <- results$integrity_checks$missing
+cat(missing$output)
+
+```
+
+---
+
+# Descriptive Statistics 
+## Numerical Features
+```{r numeric_summary, echo = FALSE, results='asis', comment = ""}
+num_block <- results$descriptive_stats$numeric_summary 
+summary <- num_block$summary
+summary$rse <- NULL
+
+if (is.null(summary) || nrow(summary) == 0) {
+cat("No numerical variables detected.")
+} else {
+kableExtra::kbl(
+    summary, 
+    booktabs = TRUE,
+    toprule = "", 
+    midrule = "",  
+    bottomrule = "",
+    # row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)
+}
+
+```
+
+### Statistical Insights 
+```{r statistical_insights, echo=FALSE, results='asis',  comment = ""}
+ 
+notes <- num_block$notes_list
+for (col in names(notes)) {
+  cat(paste0(notes[[col]], collapse = "\n"))
+}
+
+
+```
+
+---
+
+## Categorical Features
+```{r categorical_features, echo=FALSE, results='asis', fig.width=6, fig.height=4, fig.align='center'}
+
+cat_summary <- results$descriptive_stats$categorical_summary
+summary <- cat_summary$summary
+
+if (is.null(summary) ||  length(summary) == 0) {
+  cat("No categorical variables detected.")
+} else {
+  for (col in names(summary)) {
+    # 1. Output the header
+    cat(paste0("<h3>", col, "</h3>\n"))
+    
+    # 2. Build the table object
+    tbl <- kableExtra::kbl(summary[[col]], booktabs = TRUE, row.names = FALSE) %>%
+      kableExtra::kable_styling(full_width = FALSE)
+    
+    # 3. Use knit_print to ensure the HTML and dependencies are included
+    # cat() converts the table object into its raw HTML string
+    cat(as.character(tbl))
+    
+    # 4. Mandatory spacing for Markdown parsing
+    cat("\n\n")
+  }
+  
+}
+
+```
+
+
+## Feature Cardinality and Balance
+```{r cardinality_balance, echo=FALSE, results='asis', comment = ""}
+
+stats_tbl <- results$descriptive_stats$stats_tbl 
+
+if (is.null(stats_tbl) || nrow(stats_tbl) == 0) {
+cat("No categorical variables detected.")
+} else {
+kableExtra::kbl(
+    stats_tbl, 
+    booktabs = TRUE,
+    toprule = "", 
+    midrule = "",  
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)%>%
+    kableExtra::column_spec(4, width = "5cm")
+}
+
+
+```
+
+### Interpretation and Grouping Strategy
+```{r inter_group_strat, echo=FALSE, results='asis', comment = ""}
+
+grouping <- results$startegies$grouping
+cat(paste0(grouping, collapse = "\n"))
+
+
+```
+
+---
+
+## Univariate Distributions
+```{r dynamic_univariate_plots, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=10, comment = ""} 
+# Histograms for numeric variables
+# Bar charts for categorical variables
+# Notes on skewness, cardinality, imbalance (analyse the target), or unusual patterns
+# plot every 3 plots on one line
+# keep in mind: don't use for loops, instead: build → collect → arrange.
+
+plots <- list()
+num_cols <- names(df)[sapply(df, is.numeric)]
+
+for (col_name in num_cols) {
+  p <- ggplot(df, aes(x = .data[[col_name]])) +
+    geom_histogram(bins = 30, fill = "#66C2C2") +
+    theme_minimal() +
+    labs(
+      x = col_name,
+      y = NULL
+    )
+  
+  plots[[length(plots) + 1]] <- p
+}
+
+cat_cols <- names(df)[sapply(df, function(x) is.character(x) || is.factor(x))]
+
+for (col_name in cat_cols) {
+  p <- ggplot(df, aes(x = .data[[col_name]])) +
+    geom_bar(fill = "#66C2C2") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(
+      x = col_name,
+      y = NULL
+    )
+  
+  plots[[length(plots) + 1]] <- p
+}
+
+if (length(plots) > 0) {
+  wrap_plots(plots, ncol = min(3, length(plots)))
+}
+
+
+``` 
+
+### Distribution Highlights
+```{r univariate_highlights, echo=FALSE, results='asis', comment = ""}
+# Talk about data spread and balance.
+
+univariate_highlights <- comments$univariate_highlights
+cat(paste0(univariate_highlights, collapse = "\n"))
+  
+```
+
+---
+
+# Integrity & Completeness Checks
+## Missing Values (Detailed)
+### Missing Values by Column
+```{r col_missing_values, echo=FALSE, comment = ""}
+# Which columns have missing data, and how much?
+#missing <- results$integrity_checks$missing
+if (nrow(missing$summary) > 0) {
+kableExtra::kbl(
+    missing$summary, 
+    booktabs = TRUE,
+    toprule = "", 
+    midrule = "",  
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+      kableExtra::column_spec(1, bold = TRUE)
+}else{cat("No columns contain missing values.")}
+
+```
+
+---
+
+### Missing Values by Row
+```{r rows_missing_values, echo=FALSE, comment = ""}
+# Which rows have at least one missing value?
+# Helps us decide which row to investigate, impute or drop
+rows_with_missing <- missing$rows
+
+if (nrow(rows_with_missing) == 0) {
+  cat("No rows contain missing values.")
+} else {
+  DT::datatable(rows_with_missing)
+}
+
+```
+
+---
+
+## Duplicate Records
+```{r duplicate_rows, echo=FALSE, results='asis', comment = ""}
+
+dup <- results$integrity_checks$duplicates
+
+if (dup == 0) {
+  cat("No duplicate rows detected.")
+} else {
+  cat(
+    paste0(
+      "**", dup, "** duplicated rows found.  \n",
+      "These duplicates may lead to **skewed analysis** or **biased models.**"
+    )
+  )
+}
+
+```
+
+---
+
+## Special Characters
+```{r special_Characters_Check, echo=FALSE, comment=""}
+special_summary <- results$integrity_checks$special_chars # data frame
+
+if (nrow(special_summary) == 0) {
+  cat("No invalid special characters detected.")
+} else {
+  cat("The following columns contain characters outside the acceptable set:\n")
+  
+  kableExtra::kbl(
+    special_summary, 
+    booktabs = TRUE,
+    toprule = "", 
+    midrule = "",  
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)
+}
+
+```
+
+---
+
+# Anomalies & Outliers
+
+## Value Range validation 
+```{r range_validations, echo=FALSE, comment = "", results='asis'}
+validations <- results$integrity_checks$range_validations # list 
+
+cat("We checked only Age and Date columns since they are the only range-based features in this dataset, ")
+
+if (length(validations) == 0) {
+  cat("however, no issues with value ranges detected.</br> The code used for these validations is:</br>")
+} else {
+  cat("consequently, using the following code, range validation issues were identified:</br>")}
+
+```
+
+```{r range_validations_code, eval=FALSE, echo=TRUE}
+
+check_value_ranges <- function(df) {
+  issues <- list()
+  
+  if ("Age" %in% names(df)) {
+    invalid_age <- sum(df$Age < 0 | df$Age > 120, na.rm = TRUE)
+    if (invalid_age > 0) issues$Age <- invalid_age
+  }
+  
+  if ("date" %in% names(df)) {
+    min_d <- as.Date("1900-01-01")
+    max_d <- as.Date("2050-12-31")
+    valid_dates <- df$date[!is.na(df$date)]
+    viol <- sum(valid_dates < min_d | valid_dates > max_d, na.rm = TRUE)
+    if (viol > 0) issues$date <- viol
+  }
+  
+  issues
+}
+
+```
+
+```{r range_validation_result, echo=FALSE, comment = "", results='asis'}
+
+if (length(validations) > 0) {
+  validations_summary <- data.frame(
+    Column = names(validations),
+    Invalid_Count = unlist(validations),
+    row.names = NULL
+  )
+  kableExtra::kbl(
+    validations_summary, 
+    booktabs = TRUE,
+    toprule = "", 
+    midrule = "",  
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)
+}
+
+
+```
+---
+
+## Outliers: Detection (IQR), Visualization (Boxplots) & Interpretation
+```{r outliers_col, echo=FALSE, comment = ""}
+
+outlier_summary <- results$outliers$summary
+
+if (is.null(outlier_summary) || nrow(outlier_summary) == 0) {
+cat("No numeric outliers detected.")
+} else {
+  kableExtra::kbl(
+    outlier_summary,
+    booktabs = TRUE,
+    toprule = "",
+    midrule = "",
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)
+}
+
+```
+
+```{r outliers_viz, echo=FALSE, comment = "", fig.height=4, fig.width=12}
+# Here we automatically plots all numeric columns, where each column has its own y-scale and outliers highlighted in red.
+num_cols <- names(temp_df)[sapply(temp_df, is.numeric)]
+
+if (length(num_cols) > 0) {
+  df_long <- temp_df %>%
+    dplyr::select(dplyr::all_of(num_cols)) %>%
+    tidyr::pivot_longer(everything(), names_to = "Column", values_to = "Value")%>%
+    dplyr::mutate(Column = factor(Column, levels = rev(num_cols)))
+  
+  ggplot2::ggplot(df_long, ggplot2::aes(y = Value)) +
+    ggplot2::geom_boxplot(outlier.colour = "red") +
+    ggplot2::facet_wrap( ~ Column, scales = "free_y", ncol = 5) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      strip.text = ggplot2::element_text(
+        size = 12,
+        face = "bold",
+        color = "white"
+      ),
+      strip.background = ggplot2::element_rect(fill = "steelblue", color = "steelblue"),
+      # Remove the x-axis
+      axis.title.x = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank()
+    )
+}
+
+```
+
+```{r outliers_notes, echo=FALSE, results='asis', comment = ""}
+
+outliers_notes <- results$outliers$notes_list 
+
+for (col in names(outliers_notes)) {
+  
+  cat(outliers_notes[[col]])
+  cat("<br><br>")  # spacing between columns
+  
+  #cat(paste0(outliers_notes[[col]], collapse = "<br>"))
+}
+
+
+```
+
+---
+
+
+# Data Issues & Bivariate Analysis
+## Data Issues
+```{r data_issues, echo=FALSE, results='asis', comment = ""}
+
+data_issues <- results$startegies$data_issues
+cat(paste0(data_issues, collapse = "\n"))
+
+
+
+```
+
+---
+
+## Noise Reduction
+```{r removing_dup, echo=c(10, 21, 22), results='asis', comment="", class.source='fold-none'}
+
+source("../scripts/data_processing.R", local = knitr::knit_global())
+ temp_df <- df
+cat("### Removing Duplicates\n\n")
+cat("* **Dataset Total Rows: ", nrow(temp_df), "**\n")
+cat("* **Duplicate Rows:** <span style='color: red;font-weight: 700;'>", sum(duplicated(temp_df)), "</span>\n")
+cat("* **Final Count:** <span style='color: green;font-weight: 700;'>", sum(!duplicated(temp_df)), "</span>\n")
+
+df_lenght <- nrow(temp_df)
+df <- remove_duplicate(df)
+
+cat("* **Result:** ", "All identical rows removed; only distinct records kept.\n\n")
+
+cat("### Replacing Special Characters\n\n")
+
+cat("* **Columns Processed:** All character columns\n")
+cat("* **Characters Found:** '?'\n")
+cat("* **Replacement Value:** 'Unknown'\n")
+
+df <- remove_ws(df)
+df <- replace_special_char(df)
+
+cat("* **Result:** ", "Leading & trailing whitespace trimmed and **'?'** renamed to **'Unknown'**.\n\n")
+
+
+```
+
+
+---
+
+## Bivariate Analysis: Identifying Key Predictors
+```{r bi_analysis, echo=FALSE, results='asis', comment="", }
+bi_analysis <- params$glossary$bi_analysis
+cat(paste0(bi_analysis))
+
+
+bi_analysis_goals <- params$glossary$bi_analysis_goals
+cat(paste0(bi_analysis_goals))
+
+
+```
+
+### Income Distribution by Numerical Features
+
+```{r bivariate_numeric_guide, echo=FALSE, results='asis', comment=""}
+
+highlights <-  params$comments$bivariate_numeric_guidence
+bullet <- "&bull; "
+
+for (col in names(highlights)) {
+  cat(paste0("<b>", col, ":</b><br>"))
+  cat(paste0(bullet, highlights[[col]], collapse = "<br>"), "<br><br>")
+}
+
+
+```
+
+
+
+```{r bivariate_numeric, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, out.width="100%"}
+
+target_var <- names(df)[ncol(df)]
+ncol_grid <- 3
+
+num_cols <- names(df)[sapply(df, is.numeric)]
+num_cols <- setdiff(num_cols, target_var)
+
+num_plots <- list()
+
+for (col_name in num_cols) {
+  p <- ggplot(df, aes(x = !!sym(target_var), y = !!sym(col_name), fill = !!sym(target_var))) +
+    geom_boxplot(alpha = 0.6, width = 0.6) +
+    theme_minimal() +
+    labs(title = col_name, x = NULL, y = NULL) +
+    theme(
+      plot.title = element_text(size = 10, face = "bold"),
+      legend.position = "none"
+    )
+  
+  num_plots[[length(num_plots) + 1]] <- p
+}
+
+num_rows <- ceiling(length(num_plots) / ncol_grid)
+fig_height <- max(4, num_rows * 1.5)
+
+knitr::opts_current$set(fig.height = fig_height)
+
+if (length(num_plots) > 0) {
+  print(
+    wrap_plots(num_plots, ncol = ncol_grid)
+  )
+}
+```
+
+
+```{r bivariate_numeric_summary, echo=FALSE, results='asis', comment=""}
+
+highlights <-  params$comments$bivariate_numeric_highlights
+bullet <- "&bull; "
+
+for (col in names(highlights)) {
+  cat(paste0("<b>", col, ":</b><br>"))
+  cat(paste0(bullet, highlights[[col]], collapse = "<br>"), "<br><br>")
+}
+
+
+```
+
+---
+
+### Income Distribution by Categorical Features
+
+```{r bivariate_cat_guide, echo=FALSE, results='asis', comment=""}
+
+highlights <-  params$comments$bivariate_cat_guidence
+bullet <- "&bull; "
+
+for (col in names(highlights)) {
+  cat(paste0("<b>", col, ":</b><br>"))
+  cat(paste0(bullet, highlights[[col]], collapse = "<br>"), "<br><br>")
+}
+
+
+```
+
+
+
+```{r bivariate_categorical, echo=FALSE, message=FALSE, warning=FALSE,fig.height=10, fig.width=10, out.width="100%"}
+
+target_var <- names(df)[ncol(df)]
+ncol_grid <- 3
+
+cat_cols <- names(df)[sapply(df, function(x) is.factor(x) || is.character(x))]
+cat_cols <- setdiff(cat_cols, target_var)
+
+cat_plots <- list()
+
+for (col_name in cat_cols) {
+  p <- ggplot(df, aes(x = !!sym(col_name), fill = !!sym(target_var))) +
+    geom_bar(position = "fill") +
+    theme_minimal() +
+    labs(title = col_name, x = NULL, y = NULL) +
+    theme(
+      plot.title = element_text(size = 10, face = "bold"),
+      legend.position = "none",
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+  
+  cat_plots[[length(cat_plots) + 1]] <- p
+}
+
+cat_rows <- ceiling(length(cat_plots) / ncol_grid)
+fig_height <- max(4, cat_rows * 2.6)
+
+knitr::opts_current$set(fig.height = fig_height)
+
+if (length(cat_plots) > 0) {
+  print(
+    wrap_plots(cat_plots, ncol = ncol_grid, guides = "collect") &
+    theme(legend.position = "right")
+  )
+}
+```
+
+```{r bivariate_cat_summary, echo=FALSE, results='asis', comment=""}
+
+highlights <-  params$comments$bivariate_cat_highlights
+bullet <- "&bull; "
+
+for (col in names(highlights)) {
+  cat(paste0("<b>", col, ":</b><br>"))
+  cat(paste0(bullet, highlights[[col]], collapse = "<br>"), "<br><br>")
+}
+
+
+```
+
+---
+
+# From Exploratory Data Analysis (EDA) to Feature Engineering (FE)
+```{r eda_fe, echo=FALSE, results='asis', comment=""}
+
+cat("**EDA and bivariate analyses** were used to identify **data quality issues** and **strong predictors**, guiding the **creation of interaction features** and **feature transformation decisions** aimed at improving **model performance.** \n\n")
+
+# Read Excel file
+my_table <- read_excel("../support/eda-fe.xlsx")
+
+# guarantee proper line breaks in HTML output
+multi_line_cols <- c("Proposed Action", "Col")
+
+for(col in multi_line_cols){
+  if(col %in% colnames(my_table)){
+    my_table[[col]] <- gsub("\n", "<br>", my_table[[col]])
+  }
+}
+
+# Bold the first column (Issue)
+my_table[[1]] <- paste0("<b>", my_table[[1]], "</b>")
+
+# Replace all NA with empty string so it doesn’t show in the HTML table
+my_table[is.na(my_table)] <- ""
+
+# Print HTML table
+knitr::kable(my_table, escape = FALSE, booktabs = TRUE)
+
+```
+
+## Predictors Identification
+```{r, predictors, echo=FALSE, results='asis', comment=""}
+
+strong_numeric <- c("age", "education.num", "hours.per.week")
+strong_cat     <- c("workclass", "education", "marital.status", "occupation", "relationship")
+weak_cat       <- c("race", "sex")
+
+cat(paste0("**Strong Predictors:** ", paste(c(strong_numeric, strong_cat), collapse = ", "), "<br>"))
+cat(paste0("**Weak Predictors:** ", paste(weak_cat, collapse = ", "), "<br>"))
+
+```
+
+---
+
+## Treatment of Outliers (Capping)
+```{r outliers_intro, echo=FALSE, results='asis', comment = ""}
+
+cat("The EDA summary shows that **age**, **education.num**, and **hours.per.week** contain moderate to high outliers. To reduce extremes while maintaining the overall distribution, these values will be capped using **IQR fences**.\n")
+
+```
+
+```{r outlier_capping, eval=FALSE , echo=TRUE}
+
+cap_outliers <- function(df, cols_to_cap) {
+ 
+   # Only numeric cols
+  cols_to_cap <- intersect(cols_to_cap, names(df))
+  numeric_cols <- cols_to_cap[sapply(df[cols_to_cap], is.numeric)]
+  
+  # Cap a column using IQR
+  cap_column_iqr <- function(x) {
+    Q1 <- quantile(x, 0.25, na.rm = TRUE)
+    Q3 <- quantile(x, 0.75, na.rm = TRUE)
+    IQR_val <- Q3 - Q1
+    
+    lower <- Q1 - 1.5 * IQR_val
+    upper <- Q3 + 1.5 * IQR_val
+    
+    x[x < lower] <- lower
+    x[x > upper] <- upper
+    return(x)
+  }
+  
+  # Apply capping to all numeric columns
+  df[numeric_cols] <- lapply(df[numeric_cols], cap_column_iqr)
+  
+  return(df)
+}
+
+```
+
+## Assessment of Outliers Capping
+```{r removing_outliers, echo=c(10, 21, 22), results='asis', comment="", class.source='fold-none'}
+
+source("../scripts/data_processing.R", local = knitr::knit_global())
+
+strong_numeric <- c("age", "education.num", "hours.per.week")
+df <- cap_outliers(df, strong_numeric)
+
+outliers <- check_remaining_outliers(df, c("age", "hours.per.week", "education.num"))
+
+if(nrow(outliers) == 0) {
+  cat("* **No remaining outliers** in the selected columns.\n")
+} else{
+  kableExtra::kbl(
+    outliers,
+    caption = "Remaining outliers after capping",
+    booktabs = TRUE,
+    toprule = "",
+    midrule = "",
+    bottomrule = "",
+    row.names = FALSE
+  ) %>%
+    kableExtra::kable_styling(
+      full_width = FALSE
+      ) %>%
+    kableExtra::column_spec(1, bold = TRUE)
+}
+
+```
+
+
+```{r outliers_revisualizing, echo=FALSE, comment = "", fig.height=3, fig.width=9}
+num_cols <- names(df)[sapply(df, is.numeric)]
+
+if (length(num_cols) > 0) {
+  df_long <- df %>%
+    dplyr::select(dplyr::all_of(num_cols)) %>%
+    tidyr::pivot_longer(everything(), names_to = "Column", values_to = "Value")%>%
+    dplyr::mutate(Column = factor(Column, levels = rev(num_cols)))
+  
+  ggplot2::ggplot(df_long, ggplot2::aes(y = Value)) +
+    ggplot2::geom_boxplot(outlier.colour = "red") +
+    ggplot2::facet_wrap( ~ Column, scales = "free_y", ncol = 5) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      strip.text = ggplot2::element_text(
+        size = 12,
+        face = "bold",
+        color = "white"
+      ),
+      strip.background = ggplot2::element_rect(fill = "steelblue", color = "steelblue"),
+      # Remove the x-axis
+      axis.title.x = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank()
+    )
+}
+
+```
+
+```{r iqr_comment, echo=FALSE, results='asis', comment = ""}
+cat(paste0("IQR-based capping is applied here to limit extreme values, protecting linear models while minimally affecting tree-based models. This standardizes our dataset so model comparisons reflect real performance, not outlier influence."))
+```
+
+---
+
+## Treatment of Weak Features (Dropping)
+```{r fe_drop_weak, echo=FALSE, results='asis', comment = ""}
+
+cat("Barocas, Hardt & Narayanan (2023) argue that including sensitive attributes such as race or gender in predictive models can perpetuate social biases. Since **race and sex are also weak predictors** in our dataset, they have been **deliberately excluded** to maintain fairness and avoid reinforcing historical biases.")
+
+```
+
+```{r drop_weak_code, eval=FALSE}
+weak_cat <- c("Race","Sex")
+df <-  df %>% select(all_of(weak_cat))
+```
+
+---
+
+## Feature Engineering
+```{r, echo=FALSE, results='asis', comment=""}
+
+cat(paste0("Binary and product features are created before any transformation is applied.\n"))
+
+```
+
+
+```{r fe_numeric_features, eval=FALSE, echo=TRUE}
+
+if (length(strong_numeric) > 0) {
+    
+    col_age <- df_original[[strong_numeric[1]]]
+    col_edu <- df_original[[strong_numeric[2]]]
+    col_hrw <- df_original[[strong_numeric[3]]]
+    
+    # 1. Binary feature out of raw strong features (skewed or not)
+    df_binary$is_old <- col_age >= 45
+    df_binary$is_high_eduacted <- col_edu >= 12
+    df_binary$is_overtime <- col_hrw >= 40
+    
+    
+    # 2. Product feature out of raw strong features (skewed or not)
+    df_prod_num$age_edu <- product_strong(col_age, col_edu)
+    df_prod_num$age_hrw <- product_strong(col_age, col_hrw)
+    df_prod_num$edu_hrw <- product_strong(col_edu, col_hrw)
+
+}
+
+```
+
+---
+
+## Treatment of Skewness (Transformation)
+```{r, echo=FALSE, results='asis', comment=""}
+
+cat(paste0("Apply feature transformations to skewed numerical features when using linear models.\n"))
+
+```
+
+```{r fe_skew, eval=FALSE, echo=TRUE}
+
+# Check skew in Original cols
+original_strong_numeric <- df_original[, strong_numeric]
+original_skew_values <- sapply(original_strong_numeric, skewness, na.rm = TRUE)
+skewed_orig_numeric <- names(original_skew_values[abs(original_skew_values) > 1.0])
+
+# Check skew in product cols (the newly ones)
+strong_product <- c("age_edu", "age_hrw", "edu_hrw")
+product_features <- df_prod_num[, strong_product]
+product_skew_values <- sapply(product_features, skewness, na.rm = TRUE)
+skewed_product_numeric <- names(product_skew_values[abs(product_skew_values) > 1.0]) # Threshold = +-1.0
+
+# Append these two together to apply needed transformations
+all_skewed_numeric <- unique(c(skewed_orig_numeric, skewed_product_numeric))
+
+for (col_name in all_skewed_numeric) {
+  
+  col <- if (col_name %in% names(df_original)) {
+    df_original[[col_name]]
+  } else {
+    df_prod_num[[col_name]]
+  }
+  
+  # log transform
+  if (all(col > -1, na.rm = TRUE)) {
+    df_log[[paste0(col_name, "_log")]] <- fix_skew_with_log1p(col)
+  }
+  
+  # Box-Cox 
+  if (all(col > 0, na.rm = TRUE)) {
+    df_cox[[paste0(col_name, "_cox")]] <- fix_skew_with_cox(col)
+  }
+  
+}
+
+```
+
+## Assessment of Transformations
+```{r visualise_after_trans, echo=FALSE, results='asis', fig.width=15, fig.height=5, comment = ""}
+
+cat("Only **age** is transformed. Both **education.num** and **hours.per.week** are largely symmetric, so further transformations are unnecessary and would reduce interpretability.\n\n")
+
+df_raw <- fe_results$original
+df_log <- fe_results$df_log
+df_cox <- fe_results$df_cox
+
+# Numeric columns to transform
+transform_numeric <- setdiff(strong_numeric, c("education.num", "hours.per.week"))
+
+# ---- Raw plots (all strong_numeric) ----
+p1 <- wrap_plots(lapply(transform_numeric, function(col) {
+  ggplot(df_raw, aes(x = .data[[col]])) + 
+    geom_histogram(bins = 30, fill = "#66C2C2") + 
+    theme_minimal() +
+    labs(x = col)
+}), nrow = 1) + plot_annotation(title = "Raw data")
+
+# ---- Log-transformed plots ----
+p2 <- wrap_plots(lapply(transform_numeric, function(col) {
+  ggplot(df_log, aes(x = .data[[col]])) + 
+    geom_histogram(bins = 30, fill = "#66C2C2") + 
+    theme_minimal() +
+    labs(x = col)
+}), nrow = 1) + plot_annotation(title = "Transformed with Log1p")
+
+# ---- Box-Cox-transformed plots ----
+p3 <- wrap_plots(lapply(transform_numeric, function(col) {
+  ggplot(df_cox, aes(x = .data[[col]])) + 
+    geom_histogram(bins = 30, fill = "#66C2C2") + 
+    theme_minimal() +
+    labs(x = col)
+}), nrow = 1) + plot_annotation(title = "Transformed with BoxCox")
+
+# ---- Combine horizontally ----
+wrap_plots(list(p1, p2, p3), nrow = 1) +
+   plot_annotation(
+    title = "Distribution of Age: Raw vs Log1p vs Box-Cox",
+    theme = theme(
+      plot.title = 
+        element_text(size = 20, face = "bold", hjust = 0.5, margin = ggplot2::margin(b = 10))
+      )
+  )
+
+
+```
+
+```{r echo=FALSE, results='asis', comment = ""}
+
+cat("* **Outlier capping** compressed **extreme ages above 75** while **preserving the main distribution (25–45 years)**, reducing the influence of **rare elderly cases** without **distorting overall patterns**.
+
+* The **Log1p** reduced **skew**, compressed **high values**, and made the distribution more **symmetric** and suitable for **models assuming normality**.
+
+* The **Box-Cox** transformation made the data **symmetric, centered** around 5.0, and **reduced variance, effectively normalizing** it to **improve** linear model performance.
+
+* However, to evaluate the impact of these transformations, we will **test tree-based, distance-based, linear, and neural network models** on all three **age representations (capped, log1p, box-cox)** and compare **accuracy, precision, recall**, and **F1-score** to identify the best **model-transformation combinations.**")
+
+```
+
+---
+
+## Treatment of Multi-Cardinality & Imbalanced Distribution for Categorical Features
+```{r fe_cardinality, eval=FALSE}
+
+# 1. Domain Knowledge Grouping to Capture meaningful categories before blind auto rare grouping
+df_domain <- group_by_domain_knowledge(df_domain, strong_cat) 
+
+# 2. Rare Category Collapsing
+df_rare <- df_domain
+for(col in strong_cat){
+  df_rare[[col]] <- collapse_rare(df_rare[[col]], threshold = 0.02, min_levels = min_levels)
+}
+
+# 3. Calculate categories deviations
+target_val <- target_classes[2]
+deviations_df <- calc_categories_deviations(df_rare,strong_cat,target_col,target_val,target_dist)
+
+# 4. Merge categories based on deviation
+merged_deviations <- merge_similar_categories(deviations_df)
+
+# 5. Apply the newly merged categories to a new dataframe
+df_dev <- df_rare
+for(feature in strong_cat){
+  df_dev <- apply_category_merges(df_rare, merged_deviations, feature, min_levels = min_levels)
+}
+
+
+```
+
+---
+
+## Assessment of Feature Transformation on Categorical Features
+```{r re_visualise_after_grouping, echo=FALSE,results='asis', fig.width=10, fig.height=4 * length(strong_cat), comment = ""} 
+
+# Create a list to store paired plots
+comparison_plots <- list()
+
+for (col_name in strong_cat) {
+  
+  # 1. Create Raw Plot
+  p_raw <- ggplot(df, aes(x = .data[[col_name]])) +
+    geom_bar(fill = "#66C2C2") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = paste(col_name, "(Raw)"), x = NULL, y = NULL)
+  
+  # 2. Create Grouped Plot
+  p_grouped <- ggplot(fe_results$df_dev, aes(x = .data[[col_name]])) +
+    geom_bar(fill = "#FF9999") + # Different color to highlight change
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = paste(col_name, "(Grouped)"), x = NULL, y = NULL)
+  
+  # 3. Add both to the list (they will be plotted side-by-side)
+  comparison_plots[[length(comparison_plots) + 1]] <- p_raw
+  comparison_plots[[length(comparison_plots) + 1]] <- p_grouped
+}
+
+# Wrap all plots into 2 columns
+wrap_plots(comparison_plots, ncol = 2) + 
+  plot_annotation(
+    title = "Categorical Feature Distributions: Raw vs Grouped & Merged",
+    theme = theme(
+    plot.title = 
+        element_text(size = 14, face = "bold", hjust = 0.5, margin = ggplot2::margin(b = 10))
+      )
+  )
+
+
+```
+
+```{r echo=FALSE, results='asis', comment = ""}
+
+cat("The plot demonstrates that transforming categorical features substantially improves **feature quality** and **model readiness** by reducing **high cardinality**, correcting **class imbalance**, and grouping **rare categories**.
+
+This improvement is achieved through the following **feature-level transformations**:
+
+* **Workclass**: 9 → 4, balancing frequencies and simplifying modeling.
+
+* **Education**: 16 → 5, merging similar categories for stronger **statistical power**.
+
+* **Marital Status**: 7 → 3, grouping rare statuses for **stability**.
+
+* **Occupation**: 15 → 6, balancing **granularity** and **interpretability**.
+
+* **Relationship**: 6 → 3, better capturing **household roles**.
+
+**Overall Impact:**
+
+* **Cardinality Reduction:** Total categories decreased from **52 → 21**, speeding **model training**.
+
+* **Class Balance: Rare categories** merged, enabling **robust pattern learning**.
+
+* **Signal Enhancement**: Target-based merging increased the **signal-to-noise ratio**, benefiting **linear** and **logistic models.**")
+
+
+```
+
+---
+
+## Treatment of Class Imbalance (Upsampling)
+```{r target_imbalance_treatment ,echo=FALSE, results='asis', comment = "", fig.width=6, fig.height=3}
+
+cat("He and Ma (2013) explain that classifiers trained on imbalanced data tend to favor the majority class. **Therefore, upsampling is used in this project to reduce class imbalance and improve minority-class prediction.**\n")
+
+# Ensure target is factor
+  target_vals <- sort(unique(df[[target_col]]))  # dynamic unique values
+  if (length(target_vals) != 2)
+    stop("Target must be binary")
+  # Ensure positive class is second level
+  positive_class <- target_vals[2]
+  df[[target_col]] <- factor(df[[target_col]], levels = target_vals)
+  
+  # Split dataset
+  idx <- createDataPartition(df[[target_col]], p = 0.8, list = FALSE, times = 1)
+  train <- df[idx, ]
+  
+  train_balanced <- upSample(x = train %>% select(-all_of(target_col)),
+                             y = train[[target_col]],
+                             yname = target_col)
+  
+  # Add a label for "Before" in the original train set
+  train_plot <- train %>%
+    mutate(Sampling = "Before Upsampling") %>%
+    select(all_of(target_col), Sampling)
+  
+  # Add a label for "After" in the upsampled set
+  train_balanced_plot <- train_balanced %>%
+    mutate(Sampling = "After Upsampling") %>%
+    select(all_of(target_col), Sampling)
+  
+  # Combine the two datasets
+  combined_plot <- bind_rows(train_plot, train_balanced_plot)
+  
+  combined_plot$Sampling <- factor(
+  combined_plot$Sampling,
+  levels = c("Before Upsampling", "After Upsampling")
+)
+
+  
+  # Plot stacked percentages
+  ggplot(combined_plot, aes(x = Sampling, fill = !!sym(target_col))) +
+    geom_bar(position = "fill") +
+    scale_y_continuous(labels = scales::percent) +
+    scale_x_discrete(expand = expansion(mult = c(0.3, 0.3))) +
+    labs(title = "Target Distribution Before and After Upsampling (Percentage)",
+         x = "",
+         y = "",
+         fill = target_col) +
+    theme_minimal()
+
+```
+
+```{r eval=FALSE}
+
+train_balanced <- upSample(x = train %>% select(-all_of(target_col)),
+                           y = train[[target_col]], yname = target_col)
+train <- train_balanced
+
+```
+
+---
+
+
+# Models Evaluation
+```{r model_perf_tbl, echo=FALSE, results='asis', comment = ""}
+
+cat("To assess how **feature engineering** and **algorithm choices** impact predictive performance, the following **evaluation framework** was implemented:
+
+*	**8 feature engineering strategies** tested
+
+*	**6 machine learning algorithms** evaluated
+
+*	**48 total model-experiment combinations**
+
+*	**80/20 train-test split** with **upsampling for class balance**
+
+*	**Evaluation metrics: AUC, Accuracy, F1, Precision, Recall**
+
+* As this is a **classification task**, **AUC** is used as the **primary metric** to measure the model’s ability to distinguish between classes.")
+
+
+```
+
+## AUC Scores for Top-performing Models by Experiment
+```{r best_model_fe, echo=FALSE, results='asis', comment = "", fig.height=4}
+
+model_performance_tbl %>%
+  group_by(experiment) %>%
+  arrange(desc(AUC)) %>%
+  slice(1) %>%
+  ggplot(aes(x = reorder(experiment, AUC), y = AUC, fill = model)) +
+  geom_col() +
+  geom_text(aes(label = sprintf("%.3f", AUC)), 
+            hjust = -0.1, size = 3.5) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", 
+             color = "gray40", alpha = 0.7) +
+  coord_flip(ylim = c(0, 1)) +
+  scale_fill_manual(values = c("Logistic Regression" = "#00BFC4",
+                                "Neural Network" = "#F8766D", 
+                                "Random Forest" = "#4DABF7")) +
+  labs(x = "Experiment Type", 
+       y = "AUC (Area Under Curve)",
+       fill = "Best Model",
+       caption = "Dashed line = random baseline (0.5)") +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "right",
+        plot.title = element_text(face = "bold"))
+
+```
+
+## AUC Performance Across Models and Feature Engineering Strategies
+```{r auc_perf, echo=FALSE, results='asis', comment = ""}
+
+ggplot(model_performance_tbl, aes(x = model, y = experiment, fill = AUC)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(AUC, 3)), size = 3) +
+ scale_fill_gradient(
+    low = "#F8766D",   # <50k
+    high = "#00BFC4"   # >50k
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, color = "gray20"),
+    axis.text.y = element_text(color = "gray20"),
+    panel.grid = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA)
+    )
+
+```
+
+```{r auc_perf_comment, echo=FALSE, results='asis' ,comment=""}
+cat("* Across **48 model–experiment combinations**, performance was driven mainly by **feature engineering choices** rather than model complexity. 
+* Applying **deviation-based merging after domain and rare grouping (df_dev)** with Logistic Regression achieved the highest AUC (**0.835**), outperforming earlier categorical transformations alone.
+* **df_domain** and **df_rare** also **performed strongly**, confirming the importance of categorical feature treatment, while **Log/Box-Cox** transformations delivered only **marginal gains**. 
+* **Interaction features (prod_num)** improved Neural Network results, but **did not surpass** the best **AUC** achieved with simpler models and stronger feature design.")
+```
+
+
+
+## Model Stability: Mean Performance with Range
+```{r model_stab, echo=FALSE, results='asis', comment = "", fig.height=4}
+
+library(patchwork)  # or gridExtra
+
+# AUC plot
+p1 <- model_performance_tbl %>%
+  group_by(model) %>%
+  summarise(
+    mean_AUC = mean(AUC),
+    min_AUC = min(AUC),
+    max_AUC = max(AUC)
+  ) %>%
+  ggplot(aes(x = reorder(model, mean_AUC), y = mean_AUC)) +
+  geom_point(size = 3, color = "#4DABF7") +
+  geom_errorbar(aes(ymin = min_AUC, ymax = max_AUC), width = 0.2, color = "#4DABF7") +
+  coord_flip() +
+  labs(x = "Model", y = "Mean AUC", title = "AUC") +
+  theme_minimal()
+
+# F1 plot
+p2 <- model_performance_tbl %>%
+  group_by(model) %>%
+  summarise(
+    mean_F1 = mean(F1),
+    min_F1 = min(F1),
+    max_F1 = max(F1)
+  ) %>%
+  ggplot(aes(x = reorder(model, mean_F1), y = mean_F1)) +
+  geom_point(size = 3, color = "#51CF66") +
+  geom_errorbar(aes(ymin = min_F1, ymax = max_F1), width = 0.2, color = "#51CF66") +
+  coord_flip() +
+  labs(x = "", y = "Mean F1", title = "F1 Score") +
+  theme_minimal()
+
+p1 + p2
+
+```
+
+```{r algo_compare , echo=FALSE, results='asis', comment = ""}
+cat("* **Logistic Regression** achieved the **highest AUC (0.835)** and emerged as the **strongest performer**, showing that **well-engineered features can let simple models outperform complex ones**. This aligns with Kuhn and Johnson (2019), who argue that effective feature engineering can be more impactful than algorithm complexity in structured tabular data modeling.
+* **Neural Networks** were the most **consistent (AUC 0.795–0.817)**, suggesting better reliability for deployment. 
+* **Random Forest** maintained **strong F1 scores (~0.94–0.96)** with moderate stability. 
+* **XGBoost performed poorly** and inconsistently (AUC 0.571–0.812), indicating it is likely sensitive to feature encoding or may need hyperparameter tuning.")
+```
+
+## Model Selection
+```{r final_selection, echo=FALSE, results='asis', comment = ""}
+
+cat("While Logistic Regression achieved the highest peak performance (0.835 AUC), it showed high variance across experiments (range: 0.571-0.835), making it heavily dependent on optimal feature engineering.
+
+Neural Networks demonstrated the most consistent performance (AUC: 0.795-0.817) with tight ranges across both metrics, suggesting greater robustness for production deployment. 
+    
+Random Forest maintained strong F1 scores (~0.94-0.96) with moderate stability, while XGBoost's poor performance (mean AUC: 0.68) and wide variance indicate fundamental incompatibility with the tested preprocessing approaches.\n\n")
+
+cat("**Final Model Recommendation: Logistic Regression with df_dev features**\n\n")
+
+cat("Despite Neural Networks offering more consistent performance across experiments, Logistic Regression with df_dev features is recommended for production deployment based on:\n\n")
+
+cat("* **Superior discriminative ability:** Highest AUC (0.835) demonstrates best ranking performance for identifying high-income individuals\n")
+cat("* **Strong classification metrics:** 92.2% accuracy and 0.959 F1 score with perfect recall (1.0) ensuring no high-income cases are missed\n")
+cat("* **Production efficiency:** Fast training and prediction times suitable for real-time applications\n")
+cat("* **Acceptable stability:** While showing variance across feature sets, performance remains strong (>0.80 AUC) when proper feature engineering is applied\n\n")
+
+cat("This recommendation assumes the **feature engineering pipeline (deviation-based merging after domain and rare grouping)** can be consistently maintained in production.")
+
+```
+
+---
+
+# References
+```{r references, echo=FALSE, results='asis', comment = ""}
+
+cat("Barocas, S., Hardt, M. and Narayanan, A. (2023) Fairness and Machine Learning: Limitations and Opportunities. Available at: https://fairmlbook.org/pdf/fairmlbook.pdf (Accessed: 10 December 2025).
+
+He, H. and Ma, Y. (eds.) (2013) Imbalanced Learning: Foundations, Algorithms, and Applications. Hoboken, NJ: Wiley-IEEE Press.
+
+Kuhn, M. and Johnson, K. (2019) Feature Engineering and Selection: A Practical Approach for Predictive Models. Boca Raton, FL: CRC Press. Available at: http://www.feat.engineering/ (Accessed: 16 December 2025).
+
+Agency for Healthcare Research and Quality (n.d.) MEPS HC Response Rates by Panel. Available at: https://meps.ahrq.gov/survey_comp/precision_guidelines.shtml (Accessed: 14 December 2025).")
+```
+

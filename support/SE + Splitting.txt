@@ -1,0 +1,10 @@
+how to use se with split:
+Stratification
+While SE helps you interpret your results, there is a much more important check you need to do immediately after a train/test split, especially in classification problems: Stratification.
+Instead of a simple random split, you almost always want to use a stratified split.
+Feature	Random Split	Stratified Split
+Goal	Assigns rows randomly.	Ensures class ratios are preserved.
+Risk	Test set might randomly get all the rare classes.	All classes are evenly distributed across train/test sets.
+Recommended?	No, generally avoided.	Yes, highly recommended.
+In summary: The SE is a mathematical measure of precision. A 70/30 split in a large dataset automatically guarantees a low SE for your evaluation metrics. Your main practical concern should be using stratification to ensure both sets are representative of all class types.
+

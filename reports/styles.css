@@ -1,0 +1,41 @@
+/* ---- Headings ---- */
+
+h1 {
+  font-size: 1.8em;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.6em;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+/* ---- Body text ---- */
+
+body, code {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+pre {
+  border: 0px !important;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.dataTable th {
+  white-space: normal !important;
+}
+
+table {
+  font-size: 14px;
+}
+
+#header .btn-group {
+  display: none;
+}

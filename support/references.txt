@@ -1,0 +1,9 @@
+references:
+
+interpret_se: 
+
+In statistical analysis, the Relative Standard Error (RSE)—calculated as (Standard Error / Mean) * 100—is a standardized way to measure the reliability of an estimate. While thresholds can vary by field, most major statistical agencies (such as the CDC and BLS) follow these general benchmarks for 2025:
+
+https://meps.ahrq.gov/survey_comp/precision_guidelines.shtml
+
+

@@ -1,0 +1,10 @@
+We have two options to leave the outliers without hurting our model:
+1- Select an outlier-resistent model: 
+Tree-Based Models: Random Forests and Gradient Boosting (XGBoost, LightGBM) are excellent for this dataset. They split data based on thresholds, so an extremely high value (like 100 hours/week) is treated the same as a moderately high value once it passes the split point.
+
+Robust Scalers: If you use models like SVM or K-Nearest Neighbors, use the Scikit-learn RobustScaler instead of Standardscaler. It scales data using the median and IQR rather than the mean and variance, which keeps outliers from distorting the "typical" range. 
+
+2- Data Transformation:
+If outliers are skewing feature distribution, we can apply mathematical transformations to pull them in:
+Log Transformation: Applying log(x + 1) is a common technique for right-skewed data like income or hours worked. It compresses the distance between extreme values and the rest of the data.
+Capping: Instead of deleting a data point, cap it at a certain percentile (e.g., the 99th percentile). For example, if 99% of people work 80 hours or less, you could set any value above 80 to exactly 80. This preserves the "row" but limits the extreme "weight" of that feature. 

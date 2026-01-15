@@ -1,0 +1,7 @@
+Calculate Categories Deviations from average target distribution across whole dataset:
+
+first calculate their deviation 
+Large positive or negative deviations → strong predictive power
+Deviations near 0 → category behaves like average → less informative
+Categories with similar deviations → merge
+Categories with opposite deviations → keep separate

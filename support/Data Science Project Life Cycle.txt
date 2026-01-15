@@ -1,0 +1,4 @@
+
+revise data_format function, focus on the paras that the user may or may not send. is everything consistent from main.R to the functions.R to the Rdm file?
+
+

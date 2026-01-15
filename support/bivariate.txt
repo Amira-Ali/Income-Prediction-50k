@@ -1,0 +1,22 @@
+Numerical Bivariate:
+Guidance for Identifying Strong Predictors:
+If the center line (median) of the boxes differs significantly between target classes, that feature is likely a strong predictor.
+High overlap between boxes suggests the feature may not distinguish between target classes well. Little to no overlap suggests a high predictive value.
+
+Interquartile Range (IQR): The "length" of the box shows the spread of the middle 50% of the data. If one class has a much wider box, its behavior is more variable for that feature.??
+
+Outliers: Individual dots outside the whiskers indicate extreme values that might need cleaning or special handling in your model.
+Key Question: "Does the value of this numeric feature significantly change depending on which target category an observation belongs to?
+
+
+Categorical Bivariate:
+What to look for:
+If the color segments (target classes) are roughly the same size across all bars (categories), the feature likely has no relationship with the target => race is out
+If one bar is almost entirely one color while another bar is a different color, that categorical feature is a very strong predictor of the target => education, occupation, workclass,  marital_status, relationship, sex
+categories that deviate from the target distribution across the dataset, are good candidates for target prediction. 
+
+Guidance for Identifying Strong Predictors:
+* If a feature shows roughly the same distribution across all categories (bars) => feature is no good predictor.
+* if target distribution differs significantly among categories in one feature => feature is a very strong target predictor.
+* Features' categories that deviate greatly from the average target distribution across the dataset, are strong target predictors.
+Group Weak categories into a single “Other” category to reduces noise and prevent overfitting.
