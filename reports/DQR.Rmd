@@ -787,7 +787,12 @@ cap_outliers <- function(df, cols_to_cap) {
 ## Assessment of Outliers Capping
 ```{r removing_outliers, echo=c(10, 21, 22), results='asis', comment="", class.source='fold-none'}
 
-source("data_processing.R", local = knitr::knit_global())
+# Safe sourcing inside Rmd chunk
+if (!file.exists(file.path(output_path, "data_processing.R"))) {
+  stop("data_processing.R not found. Please ensure it is downloaded to output_path")
+}
+
+source(file.path(output_path, "data_processing.R"), local = knitr::knit_global())
 
 strong_numeric <- c("age", "education.num", "hours.per.week")
 df <- cap_outliers(df, strong_numeric)
