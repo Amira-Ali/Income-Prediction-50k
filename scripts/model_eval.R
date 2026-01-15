@@ -84,27 +84,27 @@ model_settings <- list(
     name = "XGBoost",
     type = "tree",
     train_fn = function(train_df, target_col) {
-      # One-hot encode categorical variables
+      
       x <- train_df %>% select(-all_of(target_col))
-      x <- x %>% mutate(across(where(is.factor), as.character)) # ensure factors become character for dummyVars
-      dummies <- dummyVars( ~ ., data = x, fullRank = TRUE)
+      x <- x %>% mutate(across(where(is.factor), as.character))
+      
+      dummies <- dummyVars(~ ., data = x, fullRank = TRUE)
       x_enc <- predict(dummies, x) %>% as.data.frame()
       
-      # Numeric matrix
-      x_matrix <- as.matrix(x_enc)
-      
-      # Target: numeric 0/1
       y <- as.numeric(train_df[[target_col]]) - 1
+      dtrain <- xgb.DMatrix(data = as.matrix(x_enc), label = y)
       
-      # Create DMatrix
-      dtrain <- xgb.DMatrix(data = x_matrix, label = y)
-      
-      # Train XGBoost
-      xgb.train(
+      model <- xgb.train(
         params = list(objective = "binary:logistic", eval_metric = "auc"),
         data = dtrain,
         nrounds = 100,
         verbose = 0
+      )
+      
+      list(
+        model = model,
+        dummies = dummies,
+        feature_names = colnames(x_enc)
       )
     },
     predict_type = "prob"
