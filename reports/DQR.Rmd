@@ -711,7 +711,7 @@ for (col in names(highlights)) {
 cat("**EDA and bivariate analyses** were used to identify **data quality issues** and **strong predictors**, guiding the **creation of interaction features** and **feature transformation decisions** aimed at improving **model performance.** \n\n")
 
 # Read Excel file
-readxl::read_excel("eda-fe.xlsx")
+my_table <- read_excel("eda-fe.xlsx")
 
 # guarantee proper line breaks in HTML output
 multi_line_cols <- c("Proposed Action", "Col")
