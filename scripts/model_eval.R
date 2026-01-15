@@ -263,22 +263,22 @@ evaluate_model <- function(df, target_col, model_key, model_name, experiment, se
     prob <- attr(tmp, "probabilities")[, positive_class]
     
   } else if (model_key == "xgboost") {
-    # Extract features (exclude target)
-    x_test <- processed$test %>% select(-all_of(processed$target_name))
-    
-    # Convert factors/characters to numeric using same dummyVars from training
-    # Assume 'dummies' was created during training
-    # If not stored, create it again from training features
-    x_train <- processed$train %>% select(-all_of(processed$target_name))
-    dummies <- dummyVars(~ ., data = x_train, fullRank = TRUE)
-    
-    x_test_enc <- predict(dummies, x_test) %>% as.data.frame()
-    
-    # Convert to numeric matrix
-    dtest <- xgb.DMatrix(data = as.matrix(x_test_enc))
-    
-    # Predict
-    prob <- predict(model, dtest)
+     x_test <- processed$test %>% select(-all_of(processed$target_name))
+  x_test <- x_test %>% mutate(across(where(is.factor), as.character))
+  
+  dummies <- model$dummies
+  x_test_enc <- predict(dummies, x_test) %>% as.data.frame()
+  
+  # Align columns EXACTLY
+  missing_cols <- setdiff(model$feature_names, names(x_test_enc))
+  if (length(missing_cols) > 0) {
+    x_test_enc[missing_cols] <- 0
+  }
+  
+  x_test_enc <- x_test_enc[, model$feature_names]
+  
+  dtest <- xgb.DMatrix(data = as.matrix(x_test_enc))
+  prob <- predict(model$model, dtest)
   } else if (model_key == "lightgbm") {
     test_matrix <- as.matrix(processed$test %>% select(-all_of(processed$target_name)))
     prob <- predict(model, test_matrix)
