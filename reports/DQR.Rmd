@@ -526,7 +526,8 @@ cat(paste0(data_issues, collapse = "\n"))
 ## Noise Reduction
 ```{r removing_dup, echo=c(10, 21, 22), results='asis', comment="", class.source='fold-none'}
 
-source("../scripts/data_processing.R", local = knitr::knit_global())
+source("data_processing.R", local = knitr::knit_global())
+
  temp_df <- df
 cat("### Removing Duplicates\n\n")
 cat("* **Dataset Total Rows: ", nrow(temp_df), "**\n")
