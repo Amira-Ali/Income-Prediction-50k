@@ -1199,7 +1199,7 @@ cat("To assess how **feature engineering** and **algorithm choices** impact pred
 model_performance_tbl %>%
   group_by(experiment) %>%
   arrange(desc(AUC)) %>%
-  slice(1) %>%
+  slice_head(n = 1) %>%
   ggplot(aes(x = reorder(experiment, AUC), y = AUC, fill = model)) +
   geom_col() +
   geom_text(aes(label = sprintf("%.3f", AUC)), 
