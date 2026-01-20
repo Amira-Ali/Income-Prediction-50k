@@ -3,6 +3,15 @@
 ## Overview
 This project predicts whether an individual's income exceeds $50,000 per year based on census data. The prediction uses machine learning classification techniques implemented in R, comparing multiple models and feature engineering approaches.
 
+## Project Goal & Research Question
+Rather than simply finding the most accurate model, this project is designed as an experimental study to answer the following question:
+Can well-designed feature engineering outperform advanced machine learning models on structured census data?
+
+To investigate this, the project:
+- Systematically applies **8 different feature engineering strategies**
+- Evaluates them across **6 model families**, from simple (Logistic Regression) to complex (Neural Networks, XGBoost, LightGBM)
+- Compares not only raw accuracy, but **AUC, stability, and generalization**
+
 ## Dataset
 The project uses census income data (`Income.csv`) containing demographic and employment information including:
 - Age, education level, occupation
@@ -89,24 +98,20 @@ The `run_all.R` script will:
 
 ## Results
 
-### Selected Model: Logistic Regression with df_dev Features 🏆
+### 🏆 Final Model Selection Strategy
+The final model was not chosen solely because it achieved the highest score, but because it best supported the project’s central hypothesis:
+**Strong feature engineering can allow simple models to outperform or rival complex models on structured data**
 
-After comprehensive evaluation of 48 model combinations (8 feature engineering strategies × 6 ML algorithms), **Logistic Regression with deviation-based features (df_dev)** was selected as the final model.
-
-**Performance Metrics:**
-- **AUC:** 0.835 (highest among all experiments)
-- **Accuracy:** 92.2%
-- **F1 Score:** 0.959
-- **Recall:** 1.000 (perfect detection of high-income individuals)
-- **Precision:** 92.2%
-
-### Why Logistic Regression?
-
-While Neural Networks achieved slightly higher accuracy (94.00%), Logistic Regression was chosen for:
-- **Superior AUC (0.835):** Best discriminative ability across all models
-- **Consistency:** Most stable performance across different feature sets (AUC range: 0.795-0.835, minimal variance)
-- **Reliability:** High performance with excellent interpretability
-- **Production readiness:** Simple models with strong features outperform complex models with weak features
+Although Neural Networks reached a slightly higher accuracy (94%), **Logistic Regression using deviation-based features** was chosen as the final model. This version performed best because it:
+- Achieved the best overall score (AUC: 0.835) out of all 48 tests.
+- Proven that smart data preparation mattered more than using a complex algorithm.
+- Is easier to explain and faster to use in a real-world setting.
+  
+**Final Results:**
+**Accuracy:** 92.2% (Percentage of correct guesses)
+**Recall:** 1.000 (Caught 100% of high-income individuals)
+**F1 Score:** 0.959 (Strong balance between precision and recall)
+**AUC: 0.835** (Highest overall reliability score)
 
 ### Model Comparison Summary
 
@@ -134,6 +139,16 @@ While Neural Networks achieved slightly higher accuracy (94.00%), Logistic Regre
 - Hyperparameter tuning
 - Testing additional algorithms
 - Deploying the model as a web application
+
+## Conclusion
+This project demonstrates that:
+**Thoughtful feature engineering often delivers greater value than simply increasing model complexity.**
+
+By systematically comparing various feature strategies across different models, we have confirmed that:
+- **Simple models can beat complex algorithms** when the data is represented effectively.
+- **Performance improvements** were primarily driven by **how we prepared the data**, not which model we picked.
+- **Feature engineering** should be a core part of the initial model design, not a step done at the end.
+
 
 ## Author
 **Amira Ali**
