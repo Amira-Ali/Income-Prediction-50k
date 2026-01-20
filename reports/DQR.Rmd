@@ -242,7 +242,7 @@ cat(paste0(grouping, collapse = "\n"))
 # plot every 3 plots on one line
 # keep in mind: don't use for loops, instead: build → collect → arrange.
 
-source("scripts/plots.R")
+here::here("scripts", "plots.R")
 
 p <- make_univariate_plots(df)
 if (!is.null(p)) print(p)
